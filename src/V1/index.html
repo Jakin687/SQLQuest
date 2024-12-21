@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SQL Quest: Injection Mayhem / A Game by Jakob Kinne
+     ...
+    -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Quest: Injection Mayhem</title>
+    <script src="data/levels.js"></script>
+
+    <script src="scripts/LocalStorageHandler.js"></script>
+    <script src="scripts/StageHandler.js"></script>
+    <script src="scripts/Stage.js"></script>
+
+    <script src="scripts/main.js" defer></script>
+
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/main.light.css">
+    <link rel="stylesheet" href="styles/main.dark.css">
+</head>
+<body>
+    <div class="content-box">
+        <div class="title-bar" style="z-index: 99;">
+            <span>SQL Quest: Injection Mayhem</span>
+            <span onclick="window.close()">[X]</span>
+        </div>
+
+        <div id="title-screen">
+            <div class="title-bar">
+                <span>injection.exe</span>
+                <span onclick="document.getElementById('title-screen').style.display = 'none'; setTimeout(() => {let s=document.getElementById('title-screen');s.style.display='block';s.classList.toggle('sudo')}, 2000)">[X]</span>
+            </div>
+            <div class="controls">
+                <button onclick="alert(1)" id="btn-play">Start new game</button>
+                <button id="btn-continue">Continue</button>
+                <button id="btn-help">Help</button>
+                <button id="btn-cheats" class="warning" onclick="window.createWarning('Security Alert', 'This action has been prohibited by the system administrator. Incident will be reported ...');document.getElementById('title-screen').classList.toggle('sudo')">sudo su</button>
+            </div>
+        </div>
+    
+        <div class="main-stage">
+            <div class="level-display">
+                <div class="title-bar">
+                    <span>Test Level</span>
+                    <span>[X]</span>
+                </div>
+                <div class="level-content">
+                    
+                </div>
+            </div>
+
+            <div class="tips-container">
+
+                <div class="tip">
+                    <div class="title-bar">
+                        <span>Tipp 1</span>
+                        <span>[X]</span>
+                    </div>
+                    <div class="tip-content">
+                        This is a test tip. Please ignore
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+* {
+    font-family: monospace;
+    cursor: default;
+    -webkit-user-select: none; /* For Safari */
+    -ms-user-select: none; /* For Internet Explorer */
+    user-select: none; /* Standard syntax */
+}
+
+body {
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--primary-color);
+    color: var(--primary-font-color);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content-box {
+    display: block;
+    position: absolute;
+    width: calc(95vw);
+    height: calc(95vh);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    z-index: 100;
+}
+
