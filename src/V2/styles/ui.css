@@ -89,21 +89,26 @@ button {
     & > *:first-child {
     }
     
-    & > *:last-child {
-        cursor: pointer;
+    &.moveable, &.moveable * {
+        cursor: move;
     }
 
-    &.moveable {
-        cursor: move;
+    & > *:last-child {
+        cursor: pointer;
     }
 }
 
 .window {
-    position: relative;
+    position: absolute;
+    background-color: var(--primary-color);
+    overflow: hidden;
+
     --scheme-color: var(--secondary-color);
 
     & > .window-content {
         border: 1px solid var(--scheme-color);
+        overflow: hidden;
+        position: absolute;
     }
 
     &.warning > .window-content {

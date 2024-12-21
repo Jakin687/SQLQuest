@@ -14,11 +14,6 @@ class UIElement
         }
     }
 
-    setAttribute(name, value)
-    {
-        this.element.setAttribute(name, value);
-    }
-
     setId(id)
     {
         this.setAttribute("id", id);
@@ -108,9 +103,61 @@ class UIElement
         return this.element.parentElement;
     }
 
+    uiParent()
+    {
+        return new UIElement(this.parentElement());
+    }
+
     children()
     {
         return this.element.children();
+    }
+
+    boundingRect()
+    {
+        return this.element.getBoundingClientRect();
+    }
+
+    left(x)
+    {
+        if (x !== undefined)
+        {
+            this.element.style.left = `${x}px`;
+            return;
+        }
+
+        return this.boundingRect().left;
+    }
+
+    top(y)
+    {
+        if (y !== undefined)
+        {
+            this.element.style.top = `${y}px`;
+            return;
+        }
+
+        return this.boundingRect().top;
+    }
+
+    width()
+    {
+        return this.boundingRect().width;
+    }
+
+    height()
+    {
+        return this.boundingRect().height;
+    }
+
+    attr(name, value)
+    {
+        if (value === undefined)
+        {
+            return this.element.getAttribute(name);
+        }
+
+        this.element.setAttribute(name, value);
     }
 }
 UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr"];
@@ -130,6 +177,11 @@ class UIUtils
     appendChild(child)
     {
         UIElement.appendToThis(this.element, child);
+    }
+
+    classList()
+    {
+        return this.element.classList();
     }
 }
 
@@ -165,19 +217,15 @@ class UIWindow extends UIUtils
         this.element.classList().add("window");
         if (x !== null)
         {
-            this.element.style().top = `${x}px`;
+            this.element.style().left = `${x}px`;
         }
         if (y !== null)
         {
-            this.element.style().left = `${y}px`;
+            this.element.style().top = `${y+25}px`;
         }
 
         this.bar = new UIBar(title);
         this.bar.appendTo(this.element);
-        if (moveable)
-        {
-            this.bar.toggleMoveable();
-        }
 
         this.content = new UIElement("div");
         this.content.classList().add("window-content");
@@ -203,6 +251,11 @@ class UIWindow extends UIUtils
         }
 
         this._flexMode = false;
+
+        if (moveable)
+        {
+            this.toggleMoveable();
+        }
     }
 
     toggleFlex()
@@ -228,5 +281,80 @@ class UIWindow extends UIUtils
     {
         this.content.appendChild(element);
     }
+
+    centerToParentHorizontal()
+    {
+        if (this.element.parentElement() === null) return;
+        this.element.style().left = `${this.element.uiParent().width() / 2 - this.element.width() / 2}px`;
+    }
+
+    centerToParentVertical()
+    {
+        if (this.element.parentElement() === null) return;
+        this.element.style().top = `${this.element.uiParent().height() / 2 - this.element.height() / 2}px`;
+    }
+
+    centerToParent()
+    {
+        this.centerToParentHorizontal();
+        this.centerToParentVertical();
+    }
+
+    toggleMoveable()
+    {
+        this.bar.toggleMoveable();
+
+        if (this.bar.classList().contains("moveable"))
+        {
+            this.bar.element.addEvent("mousedown", (event) => {
+                event.preventDefault();
+
+                let target = event.target;
+
+                if (target.innerHTML == "[X]") // TODO: find better way to do this
+                {
+                    target.click();
+                    return;
+                }
+
+                if (target.tagName == "SPAN")
+                {
+                    target = target.parentElement;
+                }
+
+                target.boundary = new UIElement(target.parentElement.parentElement);
+                target.uiElement = new UIElement(target);
+
+                target.boundary.appendChild(target.parentElement);
+
+                target.mx = event.clientX;
+                target.my = event.clientY;
+                target.px = target.uiElement.left();
+                target.py = target.uiElement.top();
+
+                document.onmouseup = () => {
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                };
+
+                document.onmousemove = (event) => {
+                    event.preventDefault();                    
+
+                    let x = event.clientX - target.boundary.left();
+                    let y = event.clientY - target.boundary.top();
+                    
+                    target.parentElement.style.left = `${Math.min(Math.max(target.px - (target.mx - x), 0), target.boundary.width() - target.uiElement.width())}px`;
+                    target.parentElement.style.top = `${Math.min(Math.max(target.py - (target.my - y), 0), target.boundary.height() - target.uiElement.height())}px`;
+                };
+            });
+
+            return true;
+        }
+
+        this.bar.element.removeEvent("mousedown");
+
+        return false;
+    }
 }
-ALIGNEMENT = {TOP: "top", CENTER: "center", BOTTOM: "bottom", LEFT: "left", RIGHT: "right"};
+ALIGNEMENT = {TOP: "top", CENTER: "center", BOTTOM: "bottom", LEFT: "left", RIGHT: "right", SPACE_AROUND: "space-around", SPACE_BETWEEN: "space-between"};
+
