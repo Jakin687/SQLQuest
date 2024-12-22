@@ -22,6 +22,17 @@ body {
     align-items: center;
 }
 
+hr {
+    margin: 10px 0;
+}
+
+code {
+    font-weight: bold;
+    background-color: var(--secondary-color);
+    background-clip: border-box;
+    color: var(--secondary-font-color);
+}
+
 .content-box {
     display: block;
     position: absolute;
@@ -37,3 +48,16 @@ body {
     z-index: 100;
 }
 
+.title-screen {
+    & .controls {
+        width: 250px;
+
+        & > button {
+            width: 100%;
+        }
+
+        & > button:not(:last-child) {
+            margin-bottom: 10px;
+        }
+    }
+}

@@ -1,6 +1,6 @@
 class UIElement
 {
-    constructor (e)
+    constructor (e, inner)
     {
         this.element = e;
 
@@ -12,6 +12,13 @@ class UIElement
         {
             this.element = e;
         }
+
+        if (inner !== undefined)
+        {
+            this.innerHTML(inner);
+        }
+
+        this.element.uiElement = this;
     }
 
     setId(id)
@@ -42,6 +49,11 @@ class UIElement
         }
 
         this.element.innerHTML = content;
+    }
+
+    outerHTML()
+    {
+        return this.element.outerHTML;
     }
 
     static appendThisTo(child, parent)
@@ -110,7 +122,7 @@ class UIElement
 
     children()
     {
-        return this.element.children();
+        return this.element.children;
     }
 
     boundingRect()
@@ -164,6 +176,18 @@ UIElement.validElements=["html","title","header","main","footer","p","a","b","br
 
 class UIUtils
 {
+    constructor (element)
+    {
+        this.element = element;
+
+        if (this.element === undefined)
+        {
+            this.element = new UIElement("div");
+        }
+
+        this.element.uiElement = this;
+    }
+
     remove()
     {
         this.element.remove();
@@ -190,14 +214,19 @@ class UIBar extends UIUtils
     constructor (title) {
         super();
 
-        this.element = new UIElement("div");
         this.element.classList().add("title-bar");
         this.title = new UIElement("span");
         this.title.innerHTML(title);
         this.title.appendTo(this.element);
         this.close = new UIElement("span");
         this.close.innerHTML("[X]");
-        this.close.addEvent("click", () => {this.element.parentElement().remove()});
+        this.close.addEvent("click", () => {
+            this.element.parentElement().classList.add("closing");
+            this.element.uiParent().addEvent("animationend", () => {
+                this.element.parentElement().classList.remove("closing");
+                this.element.parentElement().remove();
+            });
+        });
         this.close.appendTo(this.element);
     }
 
@@ -213,7 +242,6 @@ class UIWindow extends UIUtils
     {
         super();
 
-        this.element = new UIElement("div");
         this.element.classList().add("window");
         if (x !== null)
         {
@@ -231,7 +259,7 @@ class UIWindow extends UIUtils
         this.content.classList().add("window-content");
         this.content.appendTo(this.element);
 
-        if (width !== null)
+        if (width !== null && height !== null)
         {
             this.element.style().width = `${width}px`;
             this.element.style().height = `${height}px`;
@@ -241,6 +269,12 @@ class UIWindow extends UIUtils
 
             this.content.style().width = `${width}px`;
             this.content.style().height = `calc(${height}px - 25px)`;
+        }
+        else if (width !== null)
+        {
+            this.element.style().width = `${width}px`;
+            width -= 2;
+            this.content.style().width = `${width}px`;
         }
         else
         {
@@ -355,6 +389,38 @@ class UIWindow extends UIUtils
 
         return false;
     }
+
+    onclose(f)
+    {
+        this.bar.close.addEvent("click", f);
+    }
 }
 ALIGNEMENT = {TOP: "top", CENTER: "center", BOTTOM: "bottom", LEFT: "left", RIGHT: "right", SPACE_AROUND: "space-around", SPACE_BETWEEN: "space-between"};
 
+class UIPopUp extends UIWindow
+{
+    constructor (x, y, title, message)
+    {
+        super(x, y, 460, null, title, true);
+
+        this.element.classList().add("popup");
+        this.content.style().width = "unset";
+        this.content.style().maxWidth = "458px";
+
+        this.message = new UIElement("div");
+        if (typeof message === "string")
+        {
+            this.message.innerHTML(message);
+        }
+        else if (message instanceof Array)
+        {
+            message.forEach(e => this.message.appendChild(e));
+        }
+        else
+        {
+            this.message.appendChild(message);
+        }
+
+        this.addContent(this.message);
+    }
+}
