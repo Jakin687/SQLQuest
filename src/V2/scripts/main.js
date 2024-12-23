@@ -1,4 +1,10 @@
 (()=>{
+    const keys = {
+        gameProgression: "SQLQ_PROGRESSION",
+        p: "SQLQ_P",
+        q: "SQLQ_Q"
+    };
+
     buildMain = () => {
         let contentBox = new UIElement("div");
         contentBox.classList().add("content-box");
@@ -20,10 +26,17 @@
         let controls = new UIElement("div");
         controls.classList().add("controls");
 
-        let startButton = new UIElement("button", "Start new game");
+        let startButton = new UIElement("button", "[Start new game]");
         startButton.appendTo(controls);
+        startButton.addEvent("click", startNewGame);
 
-        let helpButton = new UIElement("button", "Help");
+        if (LocalStorageHandler.exists(keys.gameProgression))
+        {
+            let continueButton = new UIElement("button", "[Continue last game]");
+            continueButton.appendTo(controls);
+        }
+
+        let helpButton = new UIElement("button", "[Help]");
         helpButton.appendTo(controls);
         helpButton.addEvent("click", () => {
             let helpWindow = buildHelpWindow();
@@ -45,8 +58,8 @@
                 cheatButton.addEvent("click", () => {
                     let alertNoti = new UIPopUp(null, null,
                         "Security Alert!",
-                        "This action has been prohibited by the system administrator. Incident will be reported ...");
-                    alertNoti.classList().add("warning");
+                        "This action has been prohibited by the system administrator. Incident will be reported ...",
+                        POPUPTYPES.WARNING);
                     mainWindow.addContent(alertNoti);
                     alertNoti.centerToParent();
                 });
@@ -82,6 +95,15 @@
         link.attr("href", "https://de.wikipedia.org/wiki/SQL-Injection");
         link.addEvent("click", () => {window.open(link.attr("href"), "_blank")});
         return new UIPopUp(null, null, "What are SQL-Injections?", [text, link]);
+    };
+
+    startNewGame = () => {
+        // TODO: Replace level0 with level1
+        LocalStorageHandler.set(keys.gameProgression, 0);
+        titleScreen.destroy();
+        let levelScript = new UIElement("script");
+        levelScript.attr("src", "scripts/levels/level0.js");
+        levelScript.appendTo("head");
     };
 
     let mainWindow = buildMain();

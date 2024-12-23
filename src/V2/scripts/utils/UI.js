@@ -101,7 +101,7 @@ class UIElement
     }
 
     addEvent(name, f)
-    {
+    {   
         this.element.addEventListener(name, f);
     }
 
@@ -185,7 +185,7 @@ class UIUtils
             this.element = new UIElement("div");
         }
 
-        this.element.uiElement = this;
+        this.element.element.uiUtils = this; // Replace UIElement with this
     }
 
     remove()
@@ -220,14 +220,24 @@ class UIBar extends UIUtils
         this.title.appendTo(this.element);
         this.close = new UIElement("span");
         this.close.innerHTML("[X]");
-        this.close.addEvent("click", () => {
-            this.element.parentElement().classList.add("closing");
-            this.element.uiParent().addEvent("animationend", () => {
-                this.element.parentElement().classList.remove("closing");
-                this.element.parentElement().remove();
-            });
-        });
+        this.close.addEvent("click", this.destroy);
         this.close.appendTo(this.element);
+    }
+
+    destroy()
+    {
+        let bar = this.element; // JS CloseEvent bar.destroy()
+
+        if (!(bar instanceof UIElement)) // HTML CloseEvent (User Click)
+        {
+            bar = this.uiElement.parentElement().uiElement;
+        }
+
+        bar.parentElement().classList.add("closing");
+        bar.uiParent().addEvent("animationend", () => {
+            bar.parentElement().classList.remove("closing");
+            bar.parentElement().remove();
+        });
     }
 
     toggleMoveable()
@@ -394,18 +404,28 @@ class UIWindow extends UIUtils
     {
         this.bar.close.addEvent("click", f);
     }
+
+    destroy()
+    {
+        this.bar.destroy(); // Close window without triggering additional onCloseEvents
+    }
 }
 ALIGNEMENT = {TOP: "top", CENTER: "center", BOTTOM: "bottom", LEFT: "left", RIGHT: "right", SPACE_AROUND: "space-around", SPACE_BETWEEN: "space-between"};
 
 class UIPopUp extends UIWindow
 {
-    constructor (x, y, title, message)
+    constructor (x, y, title, message, type)
     {
         super(x, y, 460, null, title, true);
 
         this.element.classList().add("popup");
         this.content.style().width = "unset";
         this.content.style().maxWidth = "458px";
+
+        if (type !== undefined)
+        {
+            this.element.classList().add(type);
+        }
 
         this.message = new UIElement("div");
         if (typeof message === "string")
@@ -424,3 +444,5 @@ class UIPopUp extends UIWindow
         this.addContent(this.message);
     }
 }
+POPUPTYPES = {INFO: "", WARNING: "warning", TIP: "tip"}
+
