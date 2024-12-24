@@ -58,8 +58,11 @@
                 cheatButton.addEvent("click", () => {
                     let alertNoti = new UIPopUp(null, null,
                         "Security Alert!",
-                        "This action has been prohibited by the system administrator. Incident will be reported ...",
+                        "",
                         POPUPTYPES.WARNING);
+                    FancyText.slowPrint(
+                        "This action has been prohibited by the system administrator. Incident will be reported ...",
+                        alertNoti.content.element);
                     mainWindow.addContent(alertNoti);
                     alertNoti.centerToParent();
                 });
@@ -111,4 +114,7 @@
     let titleScreen = buildTitleScreen();
     mainWindow.addContent(titleScreen);
     titleScreen.centerToParent();
+
+    window.mainWindow = mainWindow;
+    window.titleScreen = titleScreen;
 })();

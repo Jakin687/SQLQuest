@@ -31,8 +31,17 @@ class UIElement
         return this.element.classList;
     }
     
-    style()
+    style(attribute, value)
     {
+        if (attribute !== undefined && value !== undefined)
+        {
+            this.element.style[attribute] = value;
+            return;
+        }
+        else if (attribute !== undefined)
+        {
+            return this.element.style[attribute];
+        }
         return this.element.style;
     }
 
@@ -172,7 +181,7 @@ class UIElement
         this.element.setAttribute(name, value);
     }
 }
-UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr"];
+UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr","input"];
 
 class UIUtils
 {

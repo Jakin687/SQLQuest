@@ -1,0 +1,27 @@
+{
+    "name": "BibDB",
+    "tables": [
+        {
+            "name": "books",
+            "columns": ["bookId", "title", "authorId", "year", "genre", "isbn"],
+            "rows": [
+                [1, "Der Alchemist", 1, 1988, "Fiction", "978-0061122415"],
+                [2, "Siddhartha", 2, 1922, "Philosophical Fiction", "978-0553208849"],
+                [3, "1984", 3, 1949, "Dystopian", "978-0451524935"],
+                [4, "Die Verwandlung", 4, 1915, "Novella", "978-0140184787"],
+                [5, "Harry Potter und der Stein der Weisen", 5, 1997, "Fantasy", "978-3551551672"]
+            ]
+        },
+        {
+            "name": "authors",
+            "columns": ["authorId", "name", "year", "nationality"],
+            "rows": [
+                [1, "Paulo Coelho", 1947, "Brasilianisch"],
+                [2, "Hermann Hesse", 1877, "Deutsch"],
+                [3, "George Orwell", 1903, "Britisch"],
+                [4, "Franz Kafka", 1883, "Österreichisch-Ungarisch"],
+                [5, "J.K. Rowling", 1965, "Britisch"]
+            ]
+        }
+    ]
+}
