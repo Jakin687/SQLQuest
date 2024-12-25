@@ -1,9 +1,20 @@
 * {
     font-family: monospace;
     cursor: default;
+
     -webkit-user-select: none; /* For Safari */
     -ms-user-select: none; /* For Internet Explorer */
     user-select: none; /* Standard syntax */
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    background: var(--primary-color);
+    border: 1px solid var(--secondary-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--secondary-color);
 }
 
 body {
@@ -60,4 +71,8 @@ code {
             margin-bottom: 10px;
         }
     }
+}
+
+.red {
+    color: red;
 }

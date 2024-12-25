@@ -20,7 +20,7 @@ class SQLDatabase
     {
         if (this.tableNames.includes(table.name))
         {
-            throw `Table already exists!`;
+            throw `SQLError: Table already exists!`;
         }
 
         this.tables.push(table);
@@ -61,7 +61,7 @@ class SQLDatabase
     print()
     {
         console.log(`Database: ${this.name}`);
-        
+
         for (let table of this.tables)
         {
             table.print();
@@ -90,7 +90,7 @@ class SQLDatabase
 
         if (!this.tableNames.includes(statement.table))
         {
-            throw `Table ${statement.table} not found`;
+            throw `SQLError: Table ${statement.table} not found`;
         }
 
         return this._get(statement.table)[statement.type](statement.args);
@@ -122,7 +122,7 @@ class SQLTable
     {
         if (!this.checkRow(row))
         {
-            throw `Row cannot be added to table!`;
+            throw `SQLError: Row cannot be added to table!`;
         }
 
         this.rows.push(row);
@@ -163,7 +163,7 @@ class SQLTable
     select(args)
     {
         console.log(args);
-        
+
         let resultTable = new SQLTable(args.columns.toString());
 
         for (let row of this.rows)
@@ -176,6 +176,11 @@ class SQLTable
         }
 
         return resultTable;
+    }
+
+    empty()
+    {
+        return this.rows.length == 0;
     }
 }
 
@@ -233,7 +238,7 @@ class SQLRow
             }
         }
 
-        throw `Now column found by name <${attr.name}>`;
+        throw `SQLError: Now column found by name <${attr.name}>`;
     }
 
     select (names, where)
@@ -258,7 +263,7 @@ class SQLRow
 
                 if(!added)
                 {
-                    throw `Column ${columnToCheck} in where clause not found`;
+                    throw `SQLError: Column ${columnToCheck} in where clause not found`;
                 }
             }
         }
@@ -308,7 +313,7 @@ class SQLStatement
 
         statement = SQLStatement._splitStatement(statement);
 
-        // console.log(statement);
+        console.log(statement);
 
         let keyWords = {
             "select": this._parseSelect,
@@ -318,7 +323,7 @@ class SQLStatement
         };
 
         let statementType;
-        
+
         for (let keyWord of Object.keys(keyWords))
         {
             if (keyWord == statement.slice(0, keyWord.split(",").length))
@@ -330,7 +335,7 @@ class SQLStatement
 
         if (statementType === undefined)
         {
-            throw `${statement[0]} isn't valid statement`;
+            throw `SQLError: ${statement[0]} isn't valid statement`;
         }
 
         return (statementType)(statement);
@@ -338,7 +343,8 @@ class SQLStatement
 
     static _splitStatement(statement)
     {
-        let specialSplitters = [",", "<", ">", "=", "<=", ">=", "(", ")", ";"];
+        let specialSplitters = [",", "<", ">", "=", "<=", ">=", "(", ")"];
+        let queryBreaks = [";", "--"];
         let splittedStatement = [];
 
         let phrase = "";
@@ -347,6 +353,20 @@ class SQLStatement
 
         while (statement != "")
         {
+            if (!inString && queryBreaks.includes(phrase))
+            {
+                phrase = "";
+                break;
+            }
+            else if (!inString && phrase.endsWith("--")) {
+                phrase = phrase.substring(0, phrase.length - 2);
+                break;
+            }
+            else if (!inString && phrase.endsWith(";")) {
+                phrase = phrase.substring(0, phrase.length - 1);
+                break;
+            }
+
             let char = statement.charAt(0);
             statement = statement.slice(1);
 
@@ -399,7 +419,7 @@ class SQLStatement
     {
         if (statement[0] != "where")
         {
-            throw `Expected where but found ${statement[0]}`;
+            throw `SQLError: Expected where but found ${statement[0]}`;
         }
 
         statement = statement.splice(1);
@@ -431,7 +451,7 @@ class SQLStatement
             {
                 if (conjunctors.includes(statement[0]) || operators.includes(statement[0]))
                 {
-                    throw `Expected data but found ${statement[0]}`;
+                    throw `SQLError: Expected data but found ${statement[0]}`;
                 }
 
                 condition += statement[0];
@@ -465,7 +485,7 @@ class SQLStatement
             {
                 if (!operators.includes(statement[0]))
                 {
-                    throw `Expected operator but found ${statement[0]}`;
+                    throw `SQLError: Expected operator but found ${statement[0]}`;
                 }
 
                 condition += statement[0].replace(/(?<![<>])=/g, "==").replace("is", "===");
@@ -476,7 +496,7 @@ class SQLStatement
             {
                 if (!conjunctors.includes(statement[0]) && statement[0] != ")")
                 {
-                    throw `Expected conjunctor but found ${statement[0]}`;
+                    throw `SQLError: Expected conjunctor but found ${statement[0]}`;
                 }
 
                 if (notFlag > 0)
@@ -505,17 +525,30 @@ class SQLStatement
 
         console.log(`return (${columns}) => ${condition}`);
 
-        return {
-            "columns": columns,
-            "condition": new Function(`return (${columns}) => ${condition}`)()
-        };
+        if (!(conjuctorFlag && !dataFlag && !operatorFlag))
+        {
+            if (dataFlag) throw `SQLError: Expected data or variable in where clause`;
+            if (operatorFlag) throw `SQLError: Expected operator like '= < > <= >=' in where clause`;
+        }
+
+        try
+        {
+            return {
+                "columns": columns,
+                "condition": new Function(`return (${columns}) => ${condition}`)()
+            };
+        }
+        catch (e)
+        {
+            throw `SQLError: Unexpected token while parsing where clause`;
+        }
     }
 
     static _parseSelect(statement)
     {
         statement = statement.splice(1);
        //  console.log(statement);
-        
+
         let columns = [];
         let table = "";
         let condition;
@@ -528,18 +561,18 @@ class SQLStatement
             {
                 if (dataFlag && statement[0] == ",")
                 {
-                    throw `Expected column name but found ,`;
+                    throw `SQLError: Expected column name but found ,`;
                 }
                 else if (!dataFlag && statement[0] != ",")
                 {
-                    throw `Expected , but found ${statement[0]}`;
+                    throw `SQLError: Expected , but found ${statement[0]}`;
                 }
 
                 if (dataFlag)
                 {
                     if (statement[0].includes(" "))
                     {
-                        throw `Expected column name but found ${statement[0]}`;
+                        throw `SQLError: Expected column name but found ${statement[0]}`;
                     }
                     columns.push(statement[0]);
                 }
@@ -558,21 +591,21 @@ class SQLStatement
 
         if (statement[0] != "from")
         {
-            throw `Expected from but found ${statement[0]}`;
+            throw `SQLError: Expected from but found ${statement[0]}`;
         }
 
         statement = statement.splice(1);
-        
+
         if (statement[0] == "where")
         {
-            throw `Expected table name but found where`;
+            throw `SQLError: Expected table name but found where`;
         }
 
         table = statement[0];
 
         if (table.includes(" "))
         {
-            throw `Expected table name but found ${table}`;
+            throw `SQLError: Expected table name but found ${table}`;
         }
 
         statement = statement.splice(1);

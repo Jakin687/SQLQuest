@@ -4,6 +4,7 @@
         p: "SQLQ_P",
         q: "SQLQ_Q"
     };
+    window.keys = keys;
 
     buildMain = () => {
         let contentBox = new UIElement("div");
@@ -59,7 +60,7 @@
                     let alertNoti = new UIPopUp(null, null,
                         "Security Alert!",
                         "",
-                        POPUPTYPES.WARNING);
+                        POPUPTYPES.ALERT);
                     FancyText.slowPrint(
                         "This action has been prohibited by the system administrator. Incident will be reported ...",
                         alertNoti.content.element);
@@ -87,10 +88,10 @@
             "Imagine a website login form where you enter your username and password. "+
             "The website might use an SQL query like this to check your credentials:<br>"+
             "<code>SELECT * FROM users WHERE username = 'user' AND password = 'pass';</code><br>"+
-            "If an attacker enters <code>user' OR '1'='1</code> as the username and "+
+            "If an attacker enters <code>user' OR '1'='1'; --</code> as the username and "+
             "anything as the password, the query becomes:<br>" +
-            "<code>SELECT * FROM users WHERE username = 'user' OR '1'='1' AND password = 'anything';</code>"+
-            "<br>The condition <code>'1'='1'</code> is always true, so the query returns all users, potentially "+
+            "<code>SELECT * FROM users WHERE username = 'user' OR '1'='1'; --' AND password = 'anything';</code>"+
+            "<br>The condition <code>'1'='1'</code> is always true and the second part has been commented be the '--', so the query returns all users, potentially "+
             "giving the attacker access to the database.<hr>");
 
         let link = new UIElement("button", "[Wiki]");
@@ -105,7 +106,7 @@
         LocalStorageHandler.set(keys.gameProgression, 0);
         titleScreen.destroy();
         let levelScript = new UIElement("script");
-        levelScript.attr("src", "scripts/levels/level0.js");
+        levelScript.attr("src", "levels/level0.js");
         levelScript.appendTo("head");
     };
 

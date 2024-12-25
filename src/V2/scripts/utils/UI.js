@@ -181,7 +181,7 @@ class UIElement
         this.element.setAttribute(name, value);
     }
 }
-UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr","input"];
+UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr","input","hr"];
 
 class UIUtils
 {
@@ -453,5 +453,5 @@ class UIPopUp extends UIWindow
         this.addContent(this.message);
     }
 }
-POPUPTYPES = {INFO: "", WARNING: "warning", TIP: "tip"}
+POPUPTYPES = {INFO: "", WARNING: "warning", ALERT: "alert", TIP: "tip"};
 

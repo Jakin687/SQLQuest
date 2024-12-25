@@ -45,6 +45,10 @@ input[type=text] {
     cursor: text;
 }
 
+hr {
+    border-color: var(--secondary-color);
+}
+
 .title-bar {
     display: flex;
     justify-content: space-between;
@@ -88,7 +92,7 @@ input[type=text] {
         position: absolute;
     }
 
-    &.warning {
+    &.warning, &.alert {
         --scheme-color: var(--tertiary-color);
     }
 
@@ -114,8 +118,8 @@ input[type=text] {
 }
 
 .popup {
-    &.warning {
-        animation: popup-warning-anim infinite 2s linear;
+    &.alert {
+        animation: popup-alert-anim infinite 2s linear;
     }
 
     &.closing {
@@ -130,7 +134,7 @@ input[type=text] {
     z-index: 98;
 }
 
-@keyframes popup-warning-anim {
+@keyframes popup-alert-anim {
     0% {
         --scheme-color: var(--tertiary-color);
     }
