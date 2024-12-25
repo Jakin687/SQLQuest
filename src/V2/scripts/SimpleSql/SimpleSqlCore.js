@@ -68,6 +68,17 @@ class SQLDatabase
         }
     }
 
+    _get(tableName)
+    {
+        for (let table of this.tables)
+        {
+            if (table.name == tableName)
+            {
+                return table;
+            }
+        }
+    }
+
     execute(statement)
     {
         if (!(statement instanceof SQLStatement))
@@ -76,6 +87,13 @@ class SQLDatabase
         }
 
         console.log(statement);
+
+        if (!this.tableNames.includes(statement.table))
+        {
+            throw `Table ${statement.table} not found`;
+        }
+
+        return this._get(statement.table)[statement.type](statement.args);
     }
 }
 
@@ -141,6 +159,24 @@ class SQLTable
             console.log(row);
         }
     }
+
+    select(args)
+    {
+        console.log(args);
+        
+        let resultTable = new SQLTable(args.columns.toString());
+
+        for (let row of this.rows)
+        {
+            let resultRow = row.select(args.columns, args.condition);
+            if (!resultRow.empty())
+            {
+                resultTable.addRow(resultRow);
+            }
+        }
+
+        return resultTable;
+    }
 }
 
 class SQLRow
@@ -200,19 +236,50 @@ class SQLRow
         throw `Now column found by name <${attr.name}>`;
     }
 
-    select (...names)
+    select (names, where)
     {
         let row = new SQLRow();
-        
-        for (let column of this.columns)
+        let valuesForWhere = [];
+
+        if (where !== undefined)
         {
-            if (names.includes(column.name))
+            for (let columnToCheck of where.columns)
             {
-                row.addColumn(column.clone());
+                let added = false;
+                for (let column of this.columns)
+                {
+                    if (columnToCheck == column.name)
+                    {
+                        valuesForWhere.push(column.value);
+                        added = true;
+                        break;
+                    }
+                }
+
+                if(!added)
+                {
+                    throw `Column ${columnToCheck} in where clause not found`;
+                }
             }
         }
 
-        return column;
+        if (where === undefined || where.condition(...valuesForWhere))
+        {
+            for (let column of this.columns)
+            {
+                if (names.length == 0 || names.includes(column.name))
+                {
+                    row.addColumn(column.clone());
+                }
+            }
+        }
+
+        return row;
+    }
+
+    empty ()
+    {
+        return this.columns.length == 0;
     }
 }
 
@@ -237,11 +304,11 @@ class SQLStatement
 
     static parse(statement)
     {
-        console.log(statement);
-        
-        statement = SQLStatement._splitStatement(statement.toLowerCase());
+        // console.log(statement);
 
-        console.log(statement);
+        statement = SQLStatement._splitStatement(statement);
+
+        // console.log(statement);
 
         let keyWords = {
             "select": this._parseSelect,
@@ -343,6 +410,11 @@ class SQLStatement
         let columns = [];
         let condition = "";
 
+        function isNumber(str)
+        {
+            return !isNaN(parseFloat(str)) && isFinite(str);
+        }
+
         let notFlag = 0;
         let dataFlag = true;
         let operatorFlag = false;
@@ -372,11 +444,17 @@ class SQLStatement
                     {
                         operatorFlag = false;
                         conjuctorFlag = true;
+
+                        if (!columns.includes(statement[0]) && !isNumber(statement[0]) && !statement[0].includes("'"))
+                        {
+                            columns.push(statement[0]);
+                        }
                     }
                     else
                     {
                         operatorFlag = true;
-                        if (!columns.includes(statement[0]))
+
+                        if (!columns.includes(statement[0]) && !isNumber(statement[0]) && !statement[0].includes("'"))
                         {
                             columns.push(statement[0]);
                         }
@@ -419,6 +497,14 @@ class SQLStatement
             statement = statement.splice(1);
         }
 
+        while (notFlag > 0)
+        {
+            condition += ")";
+            notFlag--;
+        }
+
+        console.log(`return (${columns}) => ${condition}`);
+
         return {
             "columns": columns,
             "condition": new Function(`return (${columns}) => ${condition}`)()
@@ -428,11 +514,11 @@ class SQLStatement
     static _parseSelect(statement)
     {
         statement = statement.splice(1);
-        console.log(statement);
+       //  console.log(statement);
         
         let columns = [];
         let table = "";
-        let conditions = [];
+        let condition;
 
         let dataFlag = true;
 
@@ -467,8 +553,8 @@ class SQLStatement
             statement = statement.splice(1);
         }
 
-        console.log(columns);
-        console.log(statement);
+        // console.log(columns);
+        // console.log(statement);
 
         if (statement[0] != "from")
         {
@@ -491,15 +577,22 @@ class SQLStatement
 
         statement = statement.splice(1);
 
-        console.log(table);
-        console.log(statement);
+        // console.log(table);
+        // console.log(statement);
 
         if (statement.length != 0)
         {
-            conditions = SQLStatement._parseWhereClause(statement);
+            condition = SQLStatement._parseWhereClause(statement);
         }
 
-        return [table, columns, conditions];
+        return {
+            type: "select",
+            table: table,
+            args: {
+                columns: columns,
+                condition: condition
+            }
+        };
     }
 
     static _parseInsert()
