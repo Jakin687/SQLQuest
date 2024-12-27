@@ -35,6 +35,7 @@
         {
             let continueButton = new UIElement("button", "[Continue last game]");
             continueButton.appendTo(controls);
+            continueButton.addEvent("click", continueOldGame);
         }
 
         let helpButton = new UIElement("button", "[Help]");
@@ -107,6 +108,13 @@
         titleScreen.destroy();
         let levelScript = new UIElement("script");
         levelScript.attr("src", "levels/level0.js");
+        levelScript.appendTo("head");
+    };
+
+    continueOldGame = () => {
+        titleScreen.destroy();
+        let levelScript = new UIElement("script");
+        levelScript.attr("src", `levels/level${LocalStorageHandler.get(keys.gameProgression)}.js`);
         levelScript.appendTo("head");
     };
 

@@ -488,7 +488,7 @@ class SQLStatement
                     throw `SQLError: Expected operator but found ${statement[0]}`;
                 }
 
-                condition += statement[0].replace(/(?<![<>])=/g, "==").replace("is", "===");
+                condition += statement[0].replace(/(?<![<>])(=)|(is)/g, "===");
 
                 dataFlag = true;
             }
