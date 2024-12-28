@@ -76,3 +76,9 @@ code {
 .red {
     color: red;
 }
+
+.innerContainer {
+    width: 100%;
+    height: fit-content;
+    margin: 20px 30px;
+}

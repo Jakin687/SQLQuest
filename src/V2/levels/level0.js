@@ -41,40 +41,37 @@
     }
 
     function buildWebsiteWindow() {
-        let challengeContainer = new UIElement("div");
-        challengeContainer.style("width", "100%");
-        challengeContainer.style("height", "100%");
-        challengeContainer.style("grid-column", "1");
-        challengeContainer.style("grid-row", "1");
-        challengeContainer.style("display", "flex");
-        challengeContainer.style("justify-content", "center");
-        challengeContainer.style("border-bottom", "1px solid var(--secondary-color)");
-        challengeContainer.style("border-right", "1px solid var(--secondary-color)");
+        let websiteContainer = new UIElement("div");
+        websiteContainer.classList().add("websiteContainer");
 
         let challengeInnerContainer = new UIElement("div");
-        challengeInnerContainer.style("width", "100%");
-        challengeInnerContainer.style("margin", "20px 30px");
-        challengeInnerContainer.appendTo(challengeContainer);
+        challengeInnerContainer.classList().add("innerContainer");
+        challengeInnerContainer.appendTo(websiteContainer);
 
         let inputContainer = new UIElement("div");
-        inputContainer.style("width", "100%");
-        inputContainer.style("height", "min-content");
-        inputContainer.style("display", "flex");
-        inputContainer.style("justify-content", "space-between");
+        inputContainer.classList().add("inputContainer");
         inputContainer.appendTo(challengeInnerContainer);
 
         let input = new UIElement("input");
+        input.attr("value", "' or 1 = 1 --");
         input.attr("type", "text");
-        input.attr("placeholder", "Enter name of a book")
+        input.attr("placeholder", "Enter name of a book");
         input.appendTo(inputContainer);
 
         let tableContainer = new UIElement("div");
-        tableContainer.style("width", "100%");
+        tableContainer.classList().add("tableContainer");
         tableContainer.appendTo(challengeInnerContainer);
 
         function log(str)
         {
-            (new UIElement("#console")).appendChild(new UIElement("span", str));
+            let entry = new UIElement("span", str);
+
+            if (str.startsWith("SQLError"))
+            {
+                entry.classList("error");
+            }
+
+            (new UIElement("#console")).appendChild(entry);
         }
 
         let searchButton = new UIElement("button", "Search");
@@ -103,25 +100,15 @@
             }
         });
 
-        let results = new UIElement("table");
-
-        return challengeContainer;
+        return websiteContainer;
     }
 
     function buildStoryWindow() {
         let storyContainer = new UIElement("div");
-        storyContainer.style("display", "flex");
-        storyContainer.style("flex-direction", "column");
-        storyContainer.style("width", "100%");
-        storyContainer.style("height", "100%");
-        storyContainer.style("grid-column", "1");
-        storyContainer.style("grid-row", "2");
-        storyContainer.style("border-top", "1px solid var(--secondary-color)");
-        storyContainer.style("border-right", "1px solid var(--secondary-color)");
+        storyContainer.classList("storyContainer");
 
         let storyInnerContainer = new UIElement("div");
-        storyInnerContainer.style("max-width", "100%");
-        storyInnerContainer.style("margin", "20px 30px");
+        storyInnerContainer.classList("innerContainer");
         storyInnerContainer.appendTo(storyContainer);
 
         let textConainer = new UIElement("p");
@@ -130,10 +117,7 @@
         (new UIElement("hr")).appendTo(storyInnerContainer);
 
         let inputContainer = new UIElement("div");
-        inputContainer.style("width", "100%");
-        inputContainer.style("height", "min-content");
-        inputContainer.style("display", "flex");
-        inputContainer.style("justify-content", "space-between");
+        inputContainer.classList("inputContainer");
         inputContainer.appendTo(storyInnerContainer);
 
         let solutionInput = new UIElement("input");
@@ -174,23 +158,10 @@
 
     function buildBrowserConsole() {
         let browserConsoleContainer = new UIElement("div");
-        browserConsoleContainer.style("display", "flex");
-        browserConsoleContainer.style("flex-direction", "column");
-        browserConsoleContainer.style("width", "100%");
-        browserConsoleContainer.style("height", "100%");
-        browserConsoleContainer.style("grid-column", "2");
-        browserConsoleContainer.style("grid-row-start", "1");
-        browserConsoleContainer.style("grid-row-end", "3");
-        browserConsoleContainer.style("border-left", "1px solid var(--secondary-color)");
+        browserConsoleContainer.classList("browserConsoleContainer");
 
         let browserConsoleInnerContainer = new UIElement("div");
         browserConsoleInnerContainer.attr("id", "console");
-        browserConsoleInnerContainer.style("display", "flex");
-        browserConsoleInnerContainer.style("flex-direction", "column");
-        browserConsoleInnerContainer.style("max-width", "100%");
-        browserConsoleInnerContainer.style("height", "100%");
-        browserConsoleInnerContainer.style("overflow-y", "scroll");
-        browserConsoleInnerContainer.style("margin", "20px 30px");
         browserConsoleInnerContainer.appendTo(browserConsoleContainer);
 
         return browserConsoleContainer;
@@ -198,11 +169,7 @@
 
     function buildLevel() {
         let grid = new UIElement("div");
-        grid.style("display", "grid");
-        grid.style("grid-template-columns", "60% 40%");
-        grid.style("grid-template-rows", "50% 50%");
-        grid.style("width", "100%");
-        grid.style("height", "100%");
+        grid.classList().add("levelContainer");
 
         let challenge = buildWebsiteWindow();
         challenge.appendTo(grid);

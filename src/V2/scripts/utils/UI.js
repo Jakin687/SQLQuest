@@ -37,11 +37,15 @@ class UIElement
         this.setAttribute("id", id);
     }
 
-    classList()
+    classList(c)
     {
+        if (c !== undefined)
+        {
+            this.element.classList.toggle(c);
+        }
         return this.element.classList;
     }
-    
+
     style(attribute, value)
     {
         if (attribute !== undefined && value !== undefined)

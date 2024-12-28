@@ -4,6 +4,7 @@
         --primary-color: rgb(255, 255, 255);
         --primary-fade: rgba(255, 255, 255, 0.7);
         --secondary-color: rgb(36, 244, 36);
+        --secondary-transparent-color: rgba(36, 244, 36, 0.185);
         --tertiary-color: rgb(255, 69, 69);
         --quadray-color: rgb(255, 232, 59);
         --contrast-font-color: rgb(42, 42, 42);

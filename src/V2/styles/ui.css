@@ -45,6 +45,29 @@ input[type=text] {
     cursor: text;
 }
 
+table {
+    border-collapse: collapse;
+
+    & td {
+        border: 1px solid var(--secondary-color);
+        padding: 5px 10px;
+    }
+
+    & th {
+        border: 2px solid var(--secondary-color);
+        padding: 5px 10px;
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--secondary-color);
+        color: var(--contrast-font-color);
+        text-transform: capitalize;
+    }
+
+    & tr:hover td {
+        background-color: var(--secondary-transparent-color);
+    }
+}
+
 hr {
     border-color: var(--secondary-color);
 }
