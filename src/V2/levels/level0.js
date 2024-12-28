@@ -53,7 +53,6 @@
         inputContainer.appendTo(challengeInnerContainer);
 
         let input = new UIElement("input");
-        input.attr("value", "' or 1 = 1 --");
         input.attr("type", "text");
         input.attr("placeholder", "Enter name of a book");
         input.appendTo(inputContainer);
@@ -123,7 +122,7 @@
         let solutionInput = new UIElement("input");
         solutionInput.attr("type", "text");
         solutionInput.appendTo(inputContainer);
-        solutionInput.attr("placeholder", "Solution is a number")
+        solutionInput.attr("placeholder", "Solution is a number");
 
         let solutionButton = new UIElement("button", "Submit");
         solutionButton.appendTo(inputContainer);

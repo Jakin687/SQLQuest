@@ -19,7 +19,7 @@ button {
 
     transition-property: background-position-x, color;
     transition-duration: 250ms;
-    transition-behavior: ease;
+    transition-timing-function: ease;
 
     cursor: pointer;
 
