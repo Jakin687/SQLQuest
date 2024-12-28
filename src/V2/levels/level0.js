@@ -1,36 +1,36 @@
 (()=>{
     const info = {
         level: 0,
-        name: "Level 0",
+        name: "Bibliotheks-Bandit: Einmal alles bitte",
         story: "Du befindest dich auf der Webseite einer kleinen Bibliothek. Du siehst ein Suchfeld, in das du den Namen eines Buches eingeben kannst. Dein Ziel ist es, durch eine SQL-Injection Zugriff auf die Datenbank der Bibliothek zu erhalten und die Liste aller Bücher auszulesen. <b>Wie viele Bücher gibt es?</b>",
         tips: [
             "Ein Fehler erscheint in der Browser-Konsole, der dir den Tabellennamen verrät: 'books'",
             "Du bemerkst, dass die Eingaben im Suchfeld nicht richtig gefiltert werden. Versuche, eine einfache SQL-Injection wie \"' OR '1'='1\" einzugeben."
         ],
         json: `{"name": "BibDB","tables": [{"name": "books","columns": ["bookId", "title", "authorId", "year", "genre", "isbn"],"rows": [[1, "Der Alchemist", 1, 1988, "Fiction", "978-0061122415"],[2, "Siddhartha", 2, 1922, "Philosophical Fiction", "978-0553208849"],[3, "1984", 3, 1949, "Dystopian", "978-0451524935"],[4, "Die Verwandlung", 4, 1915, "Novella", "978-0140184787"],[5, "Harry Potter und der Stein der Weisen", 5, 1997, "Fantasy", "978-3551551672"]]},{"name": "authors","columns": ["authorId", "name", "year", "nationality"],"rows": [[1, "Paulo Coelho", 1947, "Brasilianisch"],[2, "Hermann Hesse", 1877, "Deutsch"],[3, "George Orwell", 1903, "Britisch"],[4, "Franz Kafka", 1883, "Österreichisch-Ungarisch"],[5, "J.K. Rowling", 1965, "Britisch"]]}]}`,
-        solution: "5"
+        solution: "So einfach mache ich dir das nicht! xD"
     }
 
     const db = SQLDatabase.fromJsonString(info.json);
 
-    buildSuccessWindow = () => {
+    function buildSuccessWindow() {
         return new UIPopUp(
             0, 0,
             "Correct!",
             "Correct, the database contains 5 books. The next level will be loaded in a few seconds ..."
         );
-    };
+    }
 
-    buildFailWindow = () => {
+    function buildFailWindow() {
         return new UIPopUp(
             0, 0,
             "Incorrect!",
             "Incorrect, the database dosen't contain that amount of books.",
             POPUPTYPES.WARNING
         );
-    };
+    }
 
-    buildLevelWindow = () => {
+    function buildLevelWindow() {
         let levelWindow = new UIWindow(null, null, 800, 700, info.name, true);
         levelWindow.onclose(() => {
             window.mainWindow.addContent(window.titleScreen);
@@ -38,12 +38,12 @@
             document.head.lastChild.remove();
         });
         return levelWindow;
-    };
+    }
 
-    buildWebsiteWindow = () => {
+    function buildWebsiteWindow() {
         let challengeContainer = new UIElement("div");
-        challengeContainer.style("width", "calc(100% - 0px)");
-        challengeContainer.style("height", "calc(100% - 0px)");
+        challengeContainer.style("width", "100%");
+        challengeContainer.style("height", "100%");
         challengeContainer.style("grid-column", "1");
         challengeContainer.style("grid-row", "1");
         challengeContainer.style("display", "flex");
@@ -68,6 +68,10 @@
         input.attr("placeholder", "Enter name of a book")
         input.appendTo(inputContainer);
 
+        let tableContainer = new UIElement("div");
+        tableContainer.style("width", "100%");
+        tableContainer.appendTo(challengeInnerContainer);
+
         function log(str)
         {
             (new UIElement("#console")).appendChild(new UIElement("span", str));
@@ -76,19 +80,18 @@
         let searchButton = new UIElement("button", "Search");
         searchButton.appendTo(inputContainer);
         searchButton.addEvent("click", () => {
-            console.log(input.element.value);
+            console.log(`Searching for: "${input.element.value}"`);
             let statement = `select title, year, genre, isbn from books where title = '${input.element.value}';`;
             try
             {
                 let result = db.execute(statement);
 
-                console.log(result);
+                tableContainer.clear();
+                tableContainer.appendChild(result.getAsHtmlTable());
 
                 if (!result.empty())
                 {
                     log("Executed SQL-Statement: Found Results");
-
-
                 }
                 else
                 {
@@ -103,9 +106,9 @@
         let results = new UIElement("table");
 
         return challengeContainer;
-    };
+    }
 
-    buildStoryWindow = () => {
+    function buildStoryWindow() {
         let storyContainer = new UIElement("div");
         storyContainer.style("display", "flex");
         storyContainer.style("flex-direction", "column");
@@ -143,7 +146,7 @@
         solutionButton.addEvent("click", () => {
             let popUp;
 
-            if (solutionInput.element.value == info.solution)
+            if (solutionInput.element.value == db._get("books").rows.length)
             {
                 popUp = buildSuccessWindow();
                 setTimeout(() => {
@@ -167,9 +170,9 @@
         FancyText.slowPrint(info.story, textConainer.element);
 
         return storyContainer;
-    };
+    }
 
-    buildBrowserConsole = () => {
+    function buildBrowserConsole() {
         let browserConsoleContainer = new UIElement("div");
         browserConsoleContainer.style("display", "flex");
         browserConsoleContainer.style("flex-direction", "column");
@@ -191,9 +194,9 @@
         browserConsoleInnerContainer.appendTo(browserConsoleContainer);
 
         return browserConsoleContainer;
-    };
+    }
 
-    buildLevel = () => {
+    function buildLevel() {
         let grid = new UIElement("div");
         grid.style("display", "grid");
         grid.style("grid-template-columns", "60% 40%");
@@ -211,7 +214,7 @@
         browserConsole.appendTo(grid);
 
         return grid;
-    };
+    }
 
     let mainWindow = window.mainWindow;
     let levelWindow = buildLevelWindow();

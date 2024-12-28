@@ -81,12 +81,12 @@ class SQLDatabase
 
     execute(statement)
     {
+        console.log(statement);
+
         if (!(statement instanceof SQLStatement))
         {
             statement = SQLStatement.parse(statement);
         }
-
-        console.log(statement);
 
         if (!this.tableNames.includes(statement.table))
         {
@@ -162,8 +162,6 @@ class SQLTable
 
     select(args)
     {
-        console.log(args);
-
         let resultTable = new SQLTable(args.columns.toString());
 
         for (let row of this.rows)
@@ -181,6 +179,27 @@ class SQLTable
     empty()
     {
         return this.rows.length == 0;
+    }
+
+    getAsHtmlTable()
+    {
+        let table = new UIElement("table");
+        table.attr("name", this.name);
+
+        if (this.empty())
+        {
+            table.innerHTML("Empty table");
+            return table;
+        }
+
+        table.appendChild(this.rows[0].getHeaderAsHtmlRow());
+
+        for (let row of this.rows)
+        {
+            table.appendChild(row.getAsHtmlRow());
+        }
+
+        return table;
     }
 }
 
@@ -286,6 +305,30 @@ class SQLRow
     {
         return this.columns.length == 0;
     }
+
+    getAsHtmlRow()
+    {
+        let row = new UIElement("tr");
+        
+        for (let col of this.columns)
+        {
+            row.appendChild(new UIElement("td", col.getStrValue()));
+        }
+
+        return row;
+    }
+
+    getHeaderAsHtmlRow()
+    {
+        let row = new UIElement("tr");
+        
+        for (let col of this.columnNames)
+        {
+            row.appendChild(new UIElement("th", col));
+        }
+
+        return row;
+    }
 }
 
 class SQLAttribute
@@ -300,6 +343,17 @@ class SQLAttribute
     {
         return new SQLAttribute(this.name, this.value);
     }
+
+    getStrValue()
+    {
+        if (typeof this.value == "string")
+        {
+            if (this.value.includes("'")) return `"${this.value}"`;
+            return `'${this.value}'`;
+        }
+
+        return this.value;
+    }
 }
 
 class SQLStatement
@@ -309,9 +363,8 @@ class SQLStatement
 
     static parse(statement)
     {
-        // console.log(statement);
-
         statement = SQLStatement._splitStatement(statement);
+        statement = statement[statement.length - 1]; // Intentionall Bug
 
         console.log(statement);
 
@@ -326,7 +379,7 @@ class SQLStatement
 
         for (let keyWord of Object.keys(keyWords))
         {
-            if (keyWord == statement.slice(0, keyWord.split(",").length))
+            if (keyWord == "".concat(statement.slice(0, keyWord.split(",").length)))
             {
                 statementType = keyWords[keyWord];
                 break;
@@ -341,10 +394,36 @@ class SQLStatement
         return (statementType)(statement);
     }
 
+    static _beginsWith(str, arr)
+    {
+        for (let e of arr)
+        {
+            if (str.startsWith(e))
+            {
+                return [true, e];
+            }
+        }
+        return [false, ""];
+    }
+
+    static _endsWith(str, arr)
+    {
+        for (let e of arr)
+        {
+            if (str.endsWith(e))
+            {
+                return [true, e];
+            }
+        }
+        return [false, ""];
+    }
+
     static _splitStatement(statement)
     {
-        let specialSplitters = [",", "<", ">", "=", "<=", ">=", "(", ")"];
-        let queryBreaks = [";", "--"];
+        let specialSplitters = [",", "<", ">", "=", "<=", ">=", "(", ")"].sort((a, b) => {return b.length - a.length});
+        let statementSplitters = [";"];
+        let queryBreaks = ["--"];
+        let statements = [];
         let splittedStatement = [];
 
         let phrase = "";
@@ -353,58 +432,75 @@ class SQLStatement
 
         while (statement != "")
         {
-            if (!inString && queryBreaks.includes(phrase))
-            {
-                phrase = "";
-                break;
-            }
-            else if (!inString && phrase.endsWith("--")) {
-                phrase = phrase.substring(0, phrase.length - 2);
-                break;
-            }
-            else if (!inString && phrase.endsWith(";")) {
-                phrase = phrase.substring(0, phrase.length - 1);
-                break;
-            }
-
             let char = statement.charAt(0);
-            statement = statement.slice(1);
 
             if (char == "'")
             {
                 inString = !inString;
-            }
 
-            if (char == " " && !inString)
-            {
-                if (phrase != "") {
+                if (!inString) // String ended -> Add Phrase to statement
+                {
+                    phrase += char;
+                    statement = statement.slice(1);
                     splittedStatement.push(phrase);
                     phrase = "";
+                    continue;
                 }
-                continue;
-            }
-            else if (specialSplitters.includes(char))
-            {
+
+                // New String -> add previous phrase and continue with new one
                 if (phrase != "")
                 {
                     splittedStatement.push(phrase);
                 }
-
-                if (statement.length > 1)
-                {
-                    if (specialSplitters.includes(char + statement.charAt(0)))
-                    {
-                        char += statement.charAt(0);
-                        statement = statement.slice(1);
-                    }
-                }
-
-                splittedStatement.push(char);
                 phrase = "";
-                continue;
+            }
+            else if (!inString)
+            {
+                let e;
+
+                if (char == " ")
+                {
+                    if (phrase != "")
+                    {
+                        splittedStatement.push(phrase);
+                        phrase = "";
+                    }
+                    statement = statement.slice(1);
+                    continue;
+                }
+                else if ((e = SQLStatement._beginsWith(statement, specialSplitters))[0])
+                {
+                    if (phrase != "")
+                    {
+                        splittedStatement.push(phrase);
+                        phrase = "";
+                    }
+
+                    statement = statement.slice(e[1].length);
+                    splittedStatement.push(e[1]);
+                    continue;
+                }
+                else if (SQLStatement._beginsWith(statement, queryBreaks)[0])
+                {
+                    break;
+                }
+                else if ((e = SQLStatement._beginsWith(statement, statementSplitters))[0])
+                {
+                    if (phrase != "")
+                    {
+                        splittedStatement.push(phrase);
+                        phrase = "";
+                    }
+
+                    statement = statement.slice(e[1].length);
+                    statements.push(splittedStatement);
+                    splittedStatement = [];
+                    continue;
+                }
             }
 
             phrase += char;
+            statement = statement.slice(1);
         }
 
         if (phrase != "")
@@ -412,7 +508,12 @@ class SQLStatement
             splittedStatement.push(phrase);
         }
 
-        return splittedStatement;
+        if (splittedStatement.length != 0)
+        {
+            statements.push(splittedStatement);
+        }
+
+        return statements;
     }
 
     static _parseWhereClause(statement)
@@ -523,7 +624,7 @@ class SQLStatement
             notFlag--;
         }
 
-        console.log(`return (${columns}) => ${condition}`);
+        console.log(`Converting to function: "return (${columns}) => ${condition}"`);
 
         if (!(conjuctorFlag && !dataFlag && !operatorFlag))
         {
@@ -547,7 +648,6 @@ class SQLStatement
     static _parseSelect(statement)
     {
         statement = statement.splice(1);
-       //  console.log(statement);
 
         let columns = [];
         let table = "";
@@ -586,9 +686,6 @@ class SQLStatement
             statement = statement.splice(1);
         }
 
-        // console.log(columns);
-        // console.log(statement);
-
         if (statement[0] != "from")
         {
             throw `SQLError: Expected from but found ${statement[0]}`;
@@ -609,9 +706,6 @@ class SQLStatement
         }
 
         statement = statement.splice(1);
-
-        // console.log(table);
-        // console.log(statement);
 
         if (statement.length != 0)
         {

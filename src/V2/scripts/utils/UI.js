@@ -6,7 +6,18 @@ class UIElement
 
         if (typeof e === "string")
         {
-            this.element = (UIElement.validElements.includes(e)) ? document.createElement(e) : document.querySelector(e);
+            if (UIElement.validElements.includes(e))
+            {
+                this.element = document.createElement(e);
+                if (e == "button")
+                {
+                    this.attr("type", "button");
+                }
+            }
+            else
+            {
+                this.element = document.querySelector(e);
+            }
         }
         else if (e instanceof HTMLElement)
         {
@@ -179,6 +190,14 @@ class UIElement
         }
 
         this.element.setAttribute(name, value);
+    }
+
+    clear()
+    {
+        for (let child of this.children())
+        {
+            child.remove();
+        }
     }
 }
 UIElement.validElements=["html","title","header","main","footer","p","a","b","br","button","div","footer","h1","img","ol","ul","li","script","span","table","td","th","tr","input","hr"];
