@@ -93,6 +93,13 @@ class SQLDatabase
             throw `SQLError: Table ${statement.table} not found`;
         }
 
+        console.log(statement);
+
+        if (!["select", "insert"].includes(statement.type))
+        {
+            throw `SQLError: Statement ${statement.type} not supported`;
+        }
+
         return this._get(statement.table)[statement.type](statement.args);
     }
 }
@@ -176,6 +183,55 @@ class SQLTable
         return resultTable;
     }
 
+    insert(args)
+    {
+        for (let column of args.columns)
+        {
+            if (!this.rows[0].columnNames.includes(column))
+            {
+                throw `SQLError: No column named ${column} in table ${args.table}`;
+            }
+        }
+
+        for (let row of args.values)
+        {
+            if (row.length != args.columns.length)
+            {
+                throw `SQLError: Expected ${args.columns.length} values but found ${row.length}`;
+            }
+        }
+
+        for (let row of args.values)
+        {
+            let newRow = new SQLRow().copyFromRow(this.rows[0]);
+            console.log(newRow);
+
+            for (let i = 0; i < args.columns.length; i++)
+            {
+                let value = Number(row[i]);
+
+                if (isNaN(row[i]))
+                {
+                    let match = row[i].match(/(?<=^['"]).*(?=['"]$)/);
+
+                    if (match != null)
+                    {
+                        value = match[0];
+                    }
+                }
+                
+                console.log(args.columns[i], value);
+                newRow.setColumn(args.columns[i], value);
+            }
+
+            console.log(newRow);
+
+            this.addRow(newRow);
+        }
+
+        return `Inserted ${args.values.length} row(s)`;
+    }
+
     empty()
     {
         return this.rows.length == 0;
@@ -253,11 +309,11 @@ class SQLRow
             if (column.name == attr.name)
             {
                 column.value = attr.value;
-                break;
+                return;
             }
         }
 
-        throw `SQLError: Now column found by name <${attr.name}>`;
+        throw `SQLError: No column found by name ${attr.name}`;
     }
 
     select (names, where)
@@ -329,6 +385,16 @@ class SQLRow
 
         return row;
     }
+
+    copyFromRow(row)
+    {
+        for (let name of row.columnNames)
+        {
+            this.addColumn(name, null);
+        }
+
+        return this;
+    }
 }
 
 class SQLAttribute
@@ -365,8 +431,6 @@ class SQLStatement
     {
         statement = SQLStatement._splitStatement(statement);
         statement = statement[statement.length - 1]; // Intentionall Bug
-
-        console.log(statement);
 
         let keyWords = {
             "select": this._parseSelect,
@@ -722,8 +786,128 @@ class SQLStatement
         };
     }
 
-    static _parseInsert()
-    {}
+    static _parseInsert(statement)
+    {
+
+        console.log(statement);
+        
+        statement = statement.splice(2);
+
+        let table = "";
+        let columns = [];
+        let values = [];
+
+        if (statement[0] == "values" || statement[0].match(/^[a-zA-z0-9]+$/) == null)
+        {
+            throw `SQLError: Expected table name, but found ${statement[0]}`;
+        }
+
+        table = statement[0];
+        statement = statement.splice(1);
+
+        if (statement[0] != "(")
+        {
+            throw `SQLError: Expected ( , but found ${statement[0]}`;
+        }
+
+        statement = statement.splice(1);
+
+        let dataFlag = true;
+
+        while (statement[0] != ")")
+        {
+            if (dataFlag)
+            {
+                if (statement[0].match(/^[a-zA-z0-9]+$/) == null)
+                {
+                    throw `SQLError: Expected columnName, but found ${statement[0]}`;
+                }
+
+                columns.push(statement[0]);
+            }
+            else
+            {
+                if (statement[0] == ")")
+                {
+                    break;
+                }
+                else if (statement[0] != ",")
+                {
+                    throw `SQLError: Expected , , but found ${statement[0]}`;
+                }
+            }
+
+            statement = statement.splice(1);
+            dataFlag = !dataFlag;
+        }
+
+        statement = statement.splice(1);
+
+        if (statement[0] != "values")
+        {
+            throw `SQLError: Expected values, but found ${statement[0]}`;
+        }
+
+        statement = statement.splice(1);
+
+        while (statement.length > 0 && statement[0] != ";")
+        {
+            let row = [];
+
+            if (statement[0] != "(")
+            {
+                throw `SQLError: Expected ( , but found ${statement[0]}`;
+            }
+
+            statement = statement.splice(1);
+            dataFlag = true;
+
+            while (statement[0] != ")")
+            {
+                if (dataFlag)
+                {
+                    if (statement[0] == "," || statement[0] == ";" || statement[0] == ")" || statement[0] == "(")
+                    {
+                        throw `SQLError: Expected value, but found ${statement[0]}`;
+                    }
+
+                    row.push(statement[0]);
+                }
+                else
+                {
+                    if (statement[0] == ")")
+                    {
+                        break;
+                    }
+                    else if (statement[0] != ",")
+                    {
+                        throw `SQLError: Expected , , but found ${statement[0]}`;
+                    }
+                }
+    
+                statement = statement.splice(1);
+                dataFlag = !dataFlag;
+            }
+
+            statement = statement.splice(1);
+
+            if (statement[0] == ",")
+            {
+                statement = statement.splice(1);
+            }
+
+            values.push(row);
+        }
+
+        return {
+            type: "insert",
+            table: table,
+            args: {
+                columns: columns,
+                values: values
+            }
+        };
+    }
 
     static _parseUpdate()
     {}
