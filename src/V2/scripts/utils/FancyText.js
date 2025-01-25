@@ -24,7 +24,7 @@ class FancyText
                         newElement = new UIElement(char.substring(1, char.indexOf(" ")));
                         let attributes = char.substring(char.indexOf(" ")+1, char.length-1);
 
-                        for (let attribute of attributes.matchAll(/[a-zA-Z]+ ?= ?["'][a-zA-Z\d\-_ ]+?["']/g))
+                        for (let attribute of attributes.matchAll(/[a-zA-Z]+ ?= ?["'][a-zA-Z\d\-_: ]+?["']/g))
                         {
                             attribute = attribute[0].split("=");
                             newElement.attr(attribute[0], attribute[1].replaceAll(/["']/g, ""));

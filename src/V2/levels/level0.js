@@ -1,8 +1,8 @@
 (()=>{
     const info = {
         level: 0,
-        name: "Bibliotheks-Bandit: Einmal alles bitte",
-        story: "Du befindest dich auf der Webseite einer kleinen Bibliothek. Du siehst ein Suchfeld, in das du den Namen eines Buches eingeben kannst. Dein Ziel ist es, durch eine SQL-Injection Zugriff auf die Datenbank der Bibliothek zu erhalten und die Liste aller Bücher auszulesen. <b>Wie viele Bücher gibt es?</b>",
+        name: "Bibliotheks Bandit: One of everything please",
+        story: "You are on the website of a small library. You see a search field in which you can enter the name of a book. Your goal is to gain access to the library's database through an SQL injection and read the list of all books. <b>How many books are there?</b>",
         tips: [
             "Ein Fehler erscheint in der Browser-Konsole, der dir den Tabellennamen verrät: 'books'",
             "Du bemerkst, dass die Eingaben im Suchfeld nicht richtig gefiltert werden. Versuche, eine einfache SQL-Injection wie \"' OR '1'='1\" einzugeben."
@@ -17,7 +17,7 @@
         return new UIPopUp(
             0, 0,
             "Correct!",
-            "Correct, the database contains 5 books. The next level will be loaded in a few seconds ..."
+            `Correct, the database contains ${db._get("books").rows.length} books. The next level will be loaded in a few seconds ...`
         );
     }
 
