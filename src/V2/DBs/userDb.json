@@ -1,0 +1,13 @@
+{
+    "name": "TechSolutionsDB",
+    "tables": [
+        {
+            "name": "users",
+            "columns": ["username", "password"],
+            "rows": [
+                ["Bob", "1234"],
+                ["admin", "oaWdf)/(1+2s"]
+            ]
+        }
+    ]
+}

@@ -81,7 +81,7 @@ class SQLDatabase
 
     execute(statement)
     {
-        console.log(statement);
+        // console.log(statement);
 
         if (!(statement instanceof SQLStatement))
         {
@@ -93,7 +93,7 @@ class SQLDatabase
             throw `SQLError: Table ${statement.table} not found`;
         }
 
-        console.log(statement);
+        // console.log(statement);
 
         if (!["select", "insert"].includes(statement.type))
         {
@@ -204,7 +204,6 @@ class SQLTable
         for (let row of args.values)
         {
             let newRow = new SQLRow().copyFromRow(this.rows[0]);
-            console.log(newRow);
 
             for (let i = 0; i < args.columns.length; i++)
             {
@@ -219,12 +218,9 @@ class SQLTable
                         value = match[0];
                     }
                 }
-                
-                console.log(args.columns[i], value);
+
                 newRow.setColumn(args.columns[i], value);
             }
-
-            console.log(newRow);
 
             this.addRow(newRow);
         }
@@ -394,6 +390,17 @@ class SQLRow
         }
 
         return this;
+    }
+
+    _get(columnName)
+    {
+        for (let column of this.columns)
+        {
+            if (column.name == columnName)
+            {
+                return column.value;
+            }
+        }
     }
 }
 
@@ -688,7 +695,7 @@ class SQLStatement
             notFlag--;
         }
 
-        console.log(`Converting to function: "return (${columns}) => ${condition}"`);
+        // console.log(`Converting to function: "return (${columns}) => ${condition}"`);
 
         if (!(conjuctorFlag && !dataFlag && !operatorFlag))
         {
@@ -788,9 +795,6 @@ class SQLStatement
 
     static _parseInsert(statement)
     {
-
-        console.log(statement);
-        
         statement = statement.splice(2);
 
         let table = "";
