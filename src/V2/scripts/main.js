@@ -47,6 +47,12 @@
             helpWindow.centerToParent();
         });
 
+        let aboutButton = new UIElement("button", "[About]");
+        aboutButton.appendTo(controls);
+        aboutButton.classList().add("link");
+        aboutButton.attr("href", "https://github.com/Jakin687/SQLQuest?tab=readme-ov-file#sql-quest-injection-mayhem-");
+        aboutButton.addEvent("click", () => {window.open(aboutButton.attr("href"), "_blank")});
+
         titleScreen.onclose(() => {
             let state = controls.classList().toggle("sudo");
             let cheatButton = new UIElement("button", "sudo su");
