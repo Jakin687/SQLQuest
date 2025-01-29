@@ -135,10 +135,8 @@
                 setTimeout(() => {
                     LocalStorageHandler.set(window.keys.gameProgression, info.level+1);
                     levelWindow.destroy();
-                    document.head.lastChild.remove();
-                    let levelScript = new UIElement("script");
-                    levelScript.attr("src", `levels/level${info.level+1}.js`);
-                    levelScript.appendTo("head");
+                    window.loadLevel(info.level+1);
+                    document.head.lastChild.remove;
                 }, 2000);
             }
             else

@@ -1,9 +1,10 @@
 (()=>{
     const keys = {
         gameProgression: "SQLQ_PROGRESSION",
-        p: "SQLQ_P",
-        q: "SQLQ_Q"
+        lastLevel: "SQLQ_LASTLEVEL"
     };
+    // Increase for new levels
+    LocalStorageHandler.set(keys.lastLevel, 1);
     window.keys = keys;
 
     buildMain = () => {
@@ -106,16 +107,14 @@
         // TODO: Replace level0 with level1
         LocalStorageHandler.set(keys.gameProgression, 0);
         titleScreen.destroy();
-        let levelScript = new UIElement("script");
-        levelScript.attr("src", "levels/level0.js");
-        levelScript.appendTo("head");
+        window.loadLevel(0);
     };
 
     continueOldGame = () => {
-        titleScreen.destroy();
-        let levelScript = new UIElement("script");
-        levelScript.attr("src", `levels/level${LocalStorageHandler.get(keys.gameProgression)}.js`);
-        levelScript.appendTo("head");
+        if ( window.loadLevel(LocalStorageHandler.get(keys.gameProgression)) )
+        {
+            titleScreen.destroy();
+        }
     };
 
     let mainWindow = buildMain();
@@ -126,4 +125,29 @@
 
     window.mainWindow = mainWindow;
     window.titleScreen = titleScreen;
+
+    window.loadLevel = (level) => {
+        if (Number(LocalStorageHandler.get(keys.lastLevel)) >= level)
+        {
+            let nextLevel = `${window.pathPrefix}levels/level${level}.js`;
+            let levelScript = new UIElement("script");
+            levelScript.attr("src", nextLevel);
+            levelScript.appendTo("head");
+            return true;
+        }
+
+        window.lastLevelCompleted();
+        return false;
+    }
+
+    window.lastLevelCompleted = () => {
+        window.mainWindow.addContent(window.titleScreen);
+
+        let congratsPopUp = new UIPopUp(null, null,
+            "All levels completed!",
+            "Congratulations! You have completed all levels!",
+            POPUPTYPES.ALERT);
+        window.mainWindow.addContent(congratsPopUp);
+        congratsPopUp.centerToParent();
+    };
 })();
