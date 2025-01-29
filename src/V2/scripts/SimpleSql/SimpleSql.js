@@ -95,10 +95,13 @@ class SQLDatabase
 
         // console.log(statement);
 
-        if (!["select", "insert"].includes(statement.type))
+        if (!["select", "insert", "delete"].includes(statement.type))
         {
             throw `SQLError: Statement ${statement.type} not supported`;
         }
+
+        console.log(statement);
+        
 
         return this._get(statement.table)[statement.type](statement.args);
     }
@@ -181,6 +184,21 @@ class SQLTable
         }
 
         return resultTable;
+    }
+
+    delete(args)
+    {
+        let newRows = [];
+
+        for (let row of this.rows)
+        {
+            if (!row.delete(args.condition))
+            {
+                newRows.push(row);
+            }
+        }
+
+        this.rows = newRows;
     }
 
     insert(args)
@@ -310,6 +328,32 @@ class SQLRow
         }
 
         throw `SQLError: No column found by name ${attr.name}`;
+    }
+
+    delete (where)
+    {
+        let valuesForWhere = [];
+
+        for (let columnToCheck of where.columns)
+        {
+            let added = false;
+            for (let column of this.columns)
+            {
+                if (columnToCheck == column.name)
+                {
+                    valuesForWhere.push(column.value);
+                    added = true;
+                    break;
+                }
+            }
+
+            if(!added)
+            {
+                throw `SQLError: Column ${columnToCheck} in where clause not found`;
+            }
+        }
+
+        return where.condition(...valuesForWhere);
     }
 
     select (names, where)
@@ -916,6 +960,36 @@ class SQLStatement
     static _parseUpdate()
     {}
 
-    static _parseDelete()
-    {}
+    static _parseDelete(statement)
+    {
+        statement = statement.splice(2);
+
+        if (statement.length == 0)
+        {
+            throw "SQLError: Expected table but found nothing";
+        }
+        
+        let table = statement[0];
+
+        statement = statement.splice(1);
+
+        if (statement.length == 0)
+        {
+            throw "SQLError: Expected where but found nothing";
+        }
+        else if (statement[0] != "where")
+        {
+            throw `SQLError: Expected where but found ${statement[0]}`;
+        }
+
+        let condition = SQLStatement._parseWhereClause(statement);
+
+        return {
+            type: "delete",
+            table: table,
+            args: {
+                condition: condition
+            }
+        };
+    }
 }
