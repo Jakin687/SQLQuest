@@ -41,7 +41,7 @@ code {
     font-weight: bold;
     background-color: var(--secondary-color);
     background-clip: border-box;
-    color: var(--secondary-font-color);
+    color: var(--contrast-font-color);
 }
 
 .content-box {
