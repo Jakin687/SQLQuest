@@ -1,5 +1,7 @@
 # SQL Quest: Injection Mayhem 💉💾
 
+By Jakob Kinne and Maximilian Nordberg
+
 **[Play the game ▶️](https://jakin687.github.io/SQLQuest/src/V2/)**
 
 This is a small game designed to draw attention to the dangers of SQL injections. Even though this type of attack should no longer work on most sites, there will almost certainly still be some where it poses a threat.
